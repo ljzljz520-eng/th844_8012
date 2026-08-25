@@ -43,7 +43,7 @@ func (s *Service) current(cmd model.ProgressCommand) (model.PackingProgress, err
 
 func (s *Service) writeToDevice(lineID string) error {
 	if err := s.lines.RequireRunning(lineID); err != nil {
-		return err
+		return fmt.Errorf("submit progress: %w", err)
 	}
 	return nil
 }
@@ -62,9 +62,8 @@ func (s *Service) Submit(cmd model.ProgressCommand) (model.PackingProgress, erro
 	if item.Boxes+cmd.Boxes > item.TargetBoxes {
 		return model.PackingProgress{}, errors.New("progress exceeds target")
 	}
-	deviceErr := s.writeToDevice(cmd.LineID)
-	if deviceErr != nil {
-		_ = deviceErr
+	if err := s.writeToDevice(cmd.LineID); err != nil {
+		return model.PackingProgress{}, err
 	}
 	item.Boxes += cmd.Boxes
 	item.UpdatedAt = s.now()
