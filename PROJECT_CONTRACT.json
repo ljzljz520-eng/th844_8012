@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "metrics": {
+    "production_loc": 2301,
+    "production_files": 24,
+    "production_packages": 13,
+    "test_files": 9,
+    "production_functions": 153,
+    "decision_points": 335
+  },
+  "persistence": {
+    "module": "go.etcd.io/bbolt",
+    "entities": [
+      "ProduceBatch",
+      "GradeRecord",
+      "PackingProgress",
+      "DeviceLine",
+      "AuditEvent",
+      "DashboardSnapshot",
+      "OperatorSetting",
+      "ShiftSummary"
+    ],
+    "reopen_test": "TestPersistenceSurvivesReopen"
+  },
+  "workflows": [
+    {
+      "steps": [
+        "接收批次请求",
+        "校验品类和重量",
+        "持久化 ProduceBatch",
+        "返回批次结果"
+      ],
+      "test": "TestHTTPWorkflowCreatesBatchAndDashboard"
+    },
+    {
+      "steps": [
+        "读取批次",
+        "校验等级和重量",
+        "持久化 GradeRecord",
+        "聚合 DashboardSnapshot"
+      ],
+      "test": "TestRecordGradeMovesBatchToGrading"
+    },
+    {
+      "steps": [
+        "读取 DeviceLine",
+        "停机或恢复设备",
+        "提交 PackingProgress",
+        "记录审计并展示"
+      ],
+      "test": "TestPackingRejectsStoppedLine"
+    }
+  ]
+}
